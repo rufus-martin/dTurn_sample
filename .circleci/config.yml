@@ -42,3 +42,6 @@ jobs:
 
       # run tests!
       - run: mvn package -DskipTests
+      - run:           
+          name: Coping JAR
+          command: scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /home/circleci/repo/target/dataturks-1.0-SNAPSHOT.war rufy@172.25.1.106:/tmp/data-turks-api/target
