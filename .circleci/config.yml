@@ -41,7 +41,6 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
       # run tests!
-      - run: 
-          name: Building
-          command: mvn package -DskipTests
-          background: true
+      - run: mvn package -DskipTests
+      - store_artifacts:
+          path: /home/circleci/repo/target
