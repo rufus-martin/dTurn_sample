@@ -42,7 +42,7 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
       # run tests!
-      - run: echo "${MAVEN_OPTS}"
+      - run: echo "${PROD_BRANCH}"
       
       - store_artifacts:
           path: /home/circleci/repo/target/dataturks-1.0-SNAPSHOT.war
