@@ -41,8 +41,7 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
       # run tests!
-      - run: echo "${PROD_BRANCH}"
+      - run: echo "${MAVEN_OPTS}"
       
-      - run: mvn package -DskipTests
       - store_artifacts:
           path: /home/circleci/repo/target/dataturks-1.0-SNAPSHOT.war
