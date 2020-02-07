@@ -52,7 +52,6 @@ workflows:
   build-approve-deploy:
     jobs:
       - deploy: 
-         context: nexus
          filters:
            branches:
              only:
