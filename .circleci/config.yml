@@ -41,7 +41,7 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
       # run tests!
-      - run: echo "$PROD_BRANCHSADDSD"
+      - run: echo $PROD_BRANCH
       
       - store_artifacts:
           path: /home/circleci/repo/target/dataturks-1.0-SNAPSHOT.war
