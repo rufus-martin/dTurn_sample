@@ -301,7 +301,7 @@ jobs:
             - "cc:53:47:07:6f:11:a0:ed:a5:30:1e:f0:d5:9a:10:48"
             - "c6:61:a9:ce:54:19:d8:ff:3d:a8:93:f8:db:ca:a2:78"
             - "77:33:70:ff:8d:2e:fe:d3:25:a9:9d:be:c3:4e:0a:d4"
-
+      - run: echo $PROD_BRANCH
       - run:           
           name: Checkout A6
           command: |
