@@ -217,9 +217,7 @@ workflows:
   build-approve-deploy:
     jobs:
       - build:
-         context: 
-           - nexus
-           - c2f_build
+         context: c2f_build
          filters:
            branches:
              only:
