@@ -13,8 +13,17 @@ general:
 jobs:
   build:
         
-    machine:true
-      working_directory: ~/c2f/connected2fiber # directory where steps will run 
+    #docker:
+    machine: true
+      # specify the version you desire here
+      #- image: circleci/openjdk:8-jdk
+      
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+    defaults: &defaults   
+    working_directory: ~/c2f/connected2fiber # directory where steps will run 
     
     environment:
       # Customize the JVM maximum heap limit 
@@ -85,7 +94,7 @@ jobs:
             - "3b:a7:cb:f5:21:83:e5:f0:7b:ea:4d:82:aa:cf:e5:ba"
             - "eb:5d:5a:e3:36:47:e2:26:87:51:46:ef:07:4a:71:b6"
             - "5c:06:e5:18:77:85:49:b3:db:72:9e:2d:11:e2:d5:19"
-  - checkout:
+      - checkout:
            path: ~/c2f
       - run:           
           name: Checkout UI
@@ -150,12 +159,12 @@ jobs:
           - connected2fiber-
       
       - run: 
-      name: Updating Java Keystore for Nexus Repo.
-      command: sudo keytool -storepass ${KEYSTORE_PASS} -keystore /etc/ssl/certs/java/cacerts -importcert -alias godaddy-root-CA -noprompt -file ~/c2f/.circleci/c2fchain.crt
+          name: Updating Java Keystore for Nexus Repo.
+          command: sudo keytool -storepass ${KEYSTORE_PASS} -keystore /etc/ssl/certs/java/cacerts -importcert -alias godaddy-root-CA -noprompt -file ~/c2f/.circleci/c2fchain.crt
       
       - run: 
-      name: Building Deployment Assembly
-      command: gradle build prepareWebappWar -x test
+          name: Building Deployment Assembly
+          command: gradle build prepareWebappWar -x test
 
       - save_cache:
           paths:
@@ -209,8 +218,8 @@ workflows:
     jobs:
       - build:
          context: 
-   - nexus
-   - c2f_build
+           - nexus
+           - c2f_build
          filters:
            branches:
              only:
@@ -224,8 +233,8 @@ workflows:
              only: Release42           
       - build_deploy: 
          context: 
-   - nexus
-   - c2f_build
+           - nexus
+           - c2f_build
          requires:
            - hold
          filters:
@@ -235,8 +244,8 @@ workflows:
     jobs:
       - build_deploy:
          context: 
-   - nexus
-   - c2f_build
+           - nexus
+           - c2f_build
          filters:
            branches:
              only:
