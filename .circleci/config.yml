@@ -14,7 +14,6 @@ jobs:
   build:
         
     machine:true
-    defaults: &defaults   
     working_directory: ~/c2f/connected2fiber # directory where steps will run 
     
     environment:
