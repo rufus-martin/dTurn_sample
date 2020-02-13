@@ -217,7 +217,7 @@ workflows:
   build-approve-deploy:
     jobs:
       - build:
-         context: c2f_build, nexus
+         context: nexus
          filters:
            branches:
              only:
@@ -230,7 +230,7 @@ workflows:
            branches:
              only: Release42           
       - build_deploy: 
-         context: c2f_build, nexus
+         context: nexus
          requires:
            - hold
          filters:
@@ -239,7 +239,7 @@ workflows:
   build-and-deploy:
     jobs:
       - build_deploy:
-         context: c2f_build, nexus
+         context: nexus
          filters:
            branches:
              only:
