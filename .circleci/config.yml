@@ -1,5 +1,15 @@
 
 version: 2 
+
+
+general:
+  branches:
+    only:
+      - develop-stage
+      - UAT
+      - production
+      - prod-verizon
+      - Release42
 jobs:
   build:
         
@@ -26,13 +36,12 @@ jobs:
           - connected2fiber-
       
       - run: 
-	      name: Updating Java Keystore for Nexus Repo.
-	      command: |
-		  sudo keytool -storepass ${KEYSTORE_PASS} -keystore /etc/ssl/certs/java/cacerts -importcert -alias godaddy-root-CA -noprompt -file ~/c2f/.circleci/c2fchain.crt
+          name: Updating Java Keystore for Nexus Repo.
+          command: sudo keytool -storepass ${KEYSTORE_PASS} -keystore /etc/ssl/certs/java/cacerts -importcert -alias godaddy-root-CA -noprompt -file ~/c2f/.circleci/c2fchain.crt
       
       - run: 
-	      name: Building Deployment Assembly
-	      command: gradle build prepareWebappWar -x test
+          name: Building Deployment Assembly
+          command: gradle build prepareWebappWar -x test
 
       - save_cache:
           paths:
@@ -44,7 +53,7 @@ jobs:
       
   build_deploy:  
     
-	machine: true    
+    machine: true    
     defaults: &defaults   
     working_directory: ~/c2f/connected2fiber # directory where steps will run
     
@@ -58,7 +67,7 @@ jobs:
     steps:
       - add_ssh_keys:
           fingerprints:
-			- "e3:02:92:9b:0f:91:cd:04:f5:a1:38:05:23:c7:d8:0e"
+            - "e3:02:92:9b:0f:91:cd:04:f5:a1:38:05:23:c7:d8:0e"
             - "29:19:96:7d:e3:e4:29:63:d4:45:93:9b:7a:47:6e:c3"
             - "d9:99:2c:a4:5b:c5:26:0a:f0:31:11:b4:14:96:30:a4"
             - "cc:7e:e8:24:f0:0a:90:13:16:6b:cb:45:85:dc:b6:7c"
@@ -74,16 +83,16 @@ jobs:
             - "cc:53:47:07:6f:11:a0:ed:a5:30:1e:f0:d5:9a:10:48"
             - "c6:61:a9:ce:54:19:d8:ff:3d:a8:93:f8:db:ca:a2:78"
             - "77:33:70:ff:8d:2e:fe:d3:25:a9:9d:be:c3:4e:0a:d4"
-			- "3b:a7:cb:f5:21:83:e5:f0:7b:ea:4d:82:aa:cf:e5:ba"
+            - "3b:a7:cb:f5:21:83:e5:f0:7b:ea:4d:82:aa:cf:e5:ba"
             - "eb:5d:5a:e3:36:47:e2:26:87:51:46:ef:07:4a:71:b6"
             - "5c:06:e5:18:77:85:49:b3:db:72:9e:2d:11:e2:d5:19"
-	  - checkout:
+  - checkout:
            path: ~/c2f
       - run:           
           name: Checkout UI
           command: |
              mkdir ~/c2f/A6
-			 ssh-agent bash -c 'ssh-add /home/circleci/.ssh/id_rsa_42ddce443a78cdf568c0d57a72ffe96a; git clone -b ${CIRCLE_BRANCH} -v git@github.com:Connected2FiberTeam/TCW-A6.git ~/c2f/A6'
+             ssh-agent bash -c 'ssh-add /home/circleci/.ssh/id_rsa_42ddce443a78cdf568c0d57a72ffe96a; git clone -b ${CIRCLE_BRANCH} -v git@github.com:Connected2FiberTeam/TCW-A6.git ~/c2f/A6'
              
       - run:
           name: Checking out sub-modules
@@ -92,7 +101,6 @@ jobs:
             ssh-agent bash -c 'ssh-add /home/circleci/.ssh/id_rsa_42ddce443a78cdf568c0d57a72ffe96a; git submodule sync --recursive'
             ssh-agent bash -c 'ssh-add /home/circleci/.ssh/id_rsa_42ddce443a78cdf568c0d57a72ffe96a; git submodule update --recursive --init'
   
-
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -110,25 +118,25 @@ jobs:
              [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
              nvm install v10.18.1
              nvm alias default v10.18.1
-             node --version		  
+             node --version  
              npm --version
-			 
-			 if [ "${CIRCLE_BRANCH}" == "${STAGE_BRANCH}" ]; then			  
-			  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null stageweb01@tcwstageweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/.env .
+ 
+             if [ "${CIRCLE_BRANCH}" == "${STAGE_BRANCH}" ]; then  
+              scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null stageweb01@tcwstageweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/.env .
               scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r stageweb01@tcwstageweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/src/environments ~/c2f/A6/src
               
              elif [ "${CIRCLE_BRANCH}" == "${UAT_BRANCH}" ]; then
               scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null preprodweb01@preprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/.env .
               scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r preprodweb01@preprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/src/environments ~/c2f/A6/src
              
-			 elif [ "${CIRCLE_BRANCH}" == "${PROD_BRANCH}" ]; then
-               scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null prodweb01@tcwprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/.env .
-               scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r prodweb01@tcwprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/src/environments ~/c2f/A6/src
-             fi			
-			 
-			 npm install
+             elif [ "${CIRCLE_BRANCH}" == "${PROD_BRANCH}" ]; then
+              scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null prodweb01@tcwprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/.env .
+              scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r prodweb01@tcwprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/src/environments ~/c2f/A6/src
+             fi
+ 
+             npm install
              npm run build-prod
-             cp -r ~/c2f/A6/dist/c2f/* ~/c2f/connected2fiber/web/	
+             cp -r ~/c2f/A6/dist/c2f/* ~/c2f/connected2fiber/web/
              
       - save_cache:
           root: ~/c2f/A6
@@ -143,12 +151,12 @@ jobs:
           - connected2fiber-
       
       - run: 
-	      name: Updating Java Keystore for Nexus Repo.
-	      command: sudo keytool -storepass ${KEYSTORE_PASS} -keystore /etc/ssl/certs/java/cacerts -importcert -alias godaddy-root-CA -noprompt -file ~/c2f/.circleci/c2fchain.crt
+      name: Updating Java Keystore for Nexus Repo.
+      command: sudo keytool -storepass ${KEYSTORE_PASS} -keystore /etc/ssl/certs/java/cacerts -importcert -alias godaddy-root-CA -noprompt -file ~/c2f/.circleci/c2fchain.crt
       
       - run: 
-	      name: Building Deployment Assembly
-	      command: gradle build prepareWebappWar -x test
+      name: Building Deployment Assembly
+      command: gradle build prepareWebappWar -x test
 
       - save_cache:
           paths:
@@ -195,15 +203,15 @@ jobs:
                   ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null prodweb01@tcwprodweb01.eastus.cloudapp.azure.com '/bin/cp /data/connectedworld/webapps/ROOT.war /data/connectedworld/webapps_circleci'
                   scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /home/circleci/c2f/connected2fiber/build/libs/ROOT.war prodweb01@tcwprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/webapps/
                   ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dev@tcwprodweb01.eastus.cloudapp.azure.com 'sudo systemctl restart tomcat.service'                  
-             fi    		            
+             fi                
 workflows:
   version: 2
   build-approve-deploy:
     jobs:
       - build:
          context: 
-		   - nexus
-		   - c2f_build
+   - nexus
+   - c2f_build
          filters:
            branches:
              only:
@@ -217,8 +225,8 @@ workflows:
              only: Release42           
       - build_deploy: 
          context: 
-		   - nexus
-		   - c2f_build
+   - nexus
+   - c2f_build
          requires:
            - hold
          filters:
@@ -228,8 +236,8 @@ workflows:
     jobs:
       - build_deploy:
          context: 
-		   - nexus
-		   - c2f_build
+   - nexus
+   - c2f_build
          filters:
            branches:
              only:
