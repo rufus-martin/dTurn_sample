@@ -230,9 +230,7 @@ workflows:
            branches:
              only: Release42           
       - build_deploy: 
-         context: 
-           - nexus
-           - c2f_build
+         context: c2f_build
          requires:
            - hold
          filters:
@@ -241,9 +239,7 @@ workflows:
   build-and-deploy:
     jobs:
       - build_deploy:
-         context: 
-           - nexus
-           - c2f_build
+         context: c2f_build
          filters:
            branches:
              only:
