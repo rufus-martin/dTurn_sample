@@ -89,7 +89,16 @@ jobs:
                    
       - checkout:
            path: ~/c2f
-           
+      
+      - run:
+          name: Environment Variables Checking
+          command: |
+			        if [ "${CIRCLE_BRANCH}" == "${DEPLOY_BRANCH}" ]; then
+			           echo "Branch: ${DEPLOY_BRANCH} will get deployed to ${DEPLOY_ENV}"
+			        else
+			           echo "Current Branch is not equal to ${DEPLOY_BRANCH}. So deployment will be skipped."
+              fi
+              
       - run:           
           name: Checkout UI
           command: |
