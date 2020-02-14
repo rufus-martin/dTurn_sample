@@ -1,15 +1,5 @@
 
 version: 2 
-
-
-general:
-  branches:
-    only:
-      - develop-stage
-      - UAT
-      - production
-      - prod-verizon
-      - Release42
 jobs:
   build:
         
