@@ -88,6 +88,15 @@ jobs:
             - "5c:06:e5:18:77:85:49:b3:db:72:9e:2d:11:e2:d5:19"
       - checkout:
            path: ~/c2f
+   
+      - run:
+          name: Environment Variables Checking
+          command: |
+             if [ "${CIRCLE_BRANCH}" == "${DEPLOY_BRANCH}" ]; then
+                echo "Branch: ${DEPLOY_BRANCH} will get deployed to ${DEPLOY_ENV}"
+             else
+                echo "Current Branch is not equal to ${DEPLOY_BRANCH}. So deployment will be skipped."
+
       - run:           
           name: Checkout UI
           command: |
@@ -244,4 +253,3 @@ workflows:
            branches:
              only:
               - master
-              - develop-stage
