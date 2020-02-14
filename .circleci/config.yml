@@ -211,21 +211,21 @@ workflows:
          filters:
            branches:
              only:
-              - Release42
+              - /Release[0-9]+/
       - hold:
          type: approval
          requires:
            - build
          filters:
            branches:
-             only: Release42
+             only: /Release[0-9]+/
       - build_deploy: 
          context: nexus
          requires:
            - hold
          filters:
            branches:
-             only: Release42
+             only: /Release[0-9]+/
   build-and-deploy:
     jobs:
       - build_deploy:
@@ -233,7 +233,5 @@ workflows:
          filters:
            branches:
              only:
-              - UAT              
+              - master
               - develop-stage
-              - prod-verizon
-              - Release
