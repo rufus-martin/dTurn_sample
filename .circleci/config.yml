@@ -221,21 +221,21 @@ workflows:
          filters:
            branches:
              only:
-              - ${PROD_BRANCH}     
+              - Release42
       - hold:
          type: approval
          requires:
            - build
          filters:
            branches:
-             only: ${PROD_BRANCH}           
+             only: Release42
       - build_deploy: 
          context: nexus
          requires:
            - hold
          filters:
            branches:
-             only: ${PROD_BRANCH}            
+             only: Release42
   build-and-deploy:
     jobs:
       - build_deploy:
