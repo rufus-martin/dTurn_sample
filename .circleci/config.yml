@@ -130,7 +130,7 @@ jobs:
                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r preprodweb01@preprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/src/environments ~/c2f/A6/src
               if [ "${DEPLOY_ENV}" == "prod" ]; then
                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null prodweb01@tcwprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/.env .
-              scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r prodweb01@tcwprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/src/environments ~/c2f/A6/src
+                 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r prodweb01@tcwprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/src/environments ~/c2f/A6/src
               fi
              fi
            
