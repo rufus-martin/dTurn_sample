@@ -86,14 +86,7 @@ jobs:
             - "3b:a7:cb:f5:21:83:e5:f0:7b:ea:4d:82:aa:cf:e5:ba"
             - "eb:5d:5a:e3:36:47:e2:26:87:51:46:ef:07:4a:71:b6"
             - "5c:06:e5:18:77:85:49:b3:db:72:9e:2d:11:e2:d5:19"
-      - run:
-          name: Environment Details
-          command: |
-             echo "Deployment Branch: ${DEPLOY_BRANCH}"
-             echo "Will be Deploed to: ${DEPLOY_ENV}"
-             echo "Workflow for uat and prod is build_approve_deploy."
-             echo "Workflow for stage is build_and_deploy."
-             
+                   
       - checkout:
            path: ~/c2f
            
