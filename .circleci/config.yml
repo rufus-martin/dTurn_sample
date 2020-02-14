@@ -24,7 +24,7 @@ jobs:
       
     steps:
       - checkout:
-           path: ~/c2f
+           path: ~/c2f 
 
       # Download and cache dependencies
       - restore_cache: 
