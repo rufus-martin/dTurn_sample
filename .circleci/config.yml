@@ -27,7 +27,7 @@ jobs:
            path: ~/c2f
 
       # Download and cache dependencies
-      - restore_cache:
+      - restore_cache: 
           keys:
           - connected2fiber-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
