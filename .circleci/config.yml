@@ -1,61 +1,43 @@
-# Javascript Node CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
-#
-version: 2
-
-jobs:
-  build:
-    #docker:
+--- 
+jobs: 
+  build: 
+    environment: 
+      DEPLOY_BRANCH: master
+      DEPLOY_ENV: stage
     machine: true
-      # specify the version you desire here
-      #- image: circleci/node:10
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
-    #resource_class: large
-    working_directory: ~/repo
-    
-    environment:
-      DEPLOY_BRANCH: master
-      DEPLOY_ENV: stage # The Values for this parameter will stage / uat / prod. No other values are allowed
-
-    steps:
-      - checkout:
-          
-      - store_artifacts:
+    steps: 
+      - 
+        checkout: ~
+      - 
+        store_artifacts: 
           path: ~/repo/docker
-          
-  build_deploy:  
-    
-    machine: true    
-    working_directory: ~/repo # directory where steps will run
-    environment:
+    working_directory: ~/repo
+  build_deploy: 
+    environment: 
+      CIRCLE_TOK: 9d5ba374d07f1c3ca55563cf5c74c38b45843ad4
       DEPLOY_BRANCH: master
-      DEPLOY_ENV: stage # The Values for this parameter will stage / uat / prod. No other values are allowed
-      CIRCLE_TOK:9d5ba374d07f1c3ca55563cf5c74c38b45843ad4
-      
-    steps:
-     
-      - run:
-          name: Restore Artifacts
-          command: |
-             curl https://circleci.com/api/v1.1/project/github/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BUILD_NUM}/latest/artifacts?circle-token=${CIRCLE_TOK}
- workflows:
+      DEPLOY_ENV: stage
+    machine: true
+    steps: 
+      - 
+        run: 
+          command: "curl https://circleci.com/api/v1.1/project/github/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BUILD_NUM}/latest/artifacts?circle-token=${CIRCLE_TOK}\n"
+          name: "Restore Artifacts"
+    working_directory: ~/repo
+workflows: 
+  build-approve-deploy: 
+    jobs: 
+      - 
+        build: 
+          filters: 
+            branches: 
+              only: 
+                - master
+      - 
+        build_deploy: 
+          filters: 
+            branches: 
+              only: master
+          requires: 
+            - build
   version: 2
-  build-approve-deploy:
-    jobs:
-      - build:
-         filters:
-           branches:
-             only:
-              - master
-      - build_deploy: 
-         requires:
-           - build
-         filters:
-           branches:
-             only: master
