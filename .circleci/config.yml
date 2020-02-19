@@ -1,241 +1,47 @@
---- 
-jobs: 
-  build: 
-    defaults: ~
-    environment: 
-      GRADLE_OPTS: "-Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStorePassword=${KEYSTORE_PASS} -Dcom.ibm.jsse2.overrideDefaultTLS=true"
-      JVM_OPTS: "-Xmx3200m"
-      KEYSTORE_PASS: changeit
-      TERM: dumb
-    machine: true
-    steps: 
-      - 
-        checkout: 
-          path: ~/c2f
-      - 
-        restore_cache: 
-          keys: 
-            - "connected2fiber-{{ checksum \"build.gradle\" }}"
-            - connected2fiber-
-      - 
-        run: 
-          command: "sudo keytool -storepass ${KEYSTORE_PASS} -keystore /etc/ssl/certs/java/cacerts -importcert -alias godaddy-root-CA -noprompt -file ~/c2f/.circleci/c2fchain.crt"
-          name: "Updating Java Keystore for Nexus Repo."
-      - 
-        run: 
-          command: "gradle build prepareWebappWar -x test"
-          name: "Building Deployment Assembly"
-      - 
-        save_cache: 
-          key: "connected2fiber-{{ checksum \"build.gradle\" }}"
-          paths: 
-            - ~/.gradle
-      - 
-        store_artifacts: 
-          path: ~/c2f/connected2fiber/build/libs/ROOT.war
-    working_directory: ~/c2f/connected2fiber
-  build_deploy: 
-    defaults: ~
-    environment: 
-      DEPLOY_BRANCH: Release42
-      DEPLOY_ENV: prod
-      GRADLE_OPTS: "-Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStorePassword=${KEYSTORE_PASS} -Dcom.ibm.jsse2.overrideDefaultTLS=true"
-      JVM_OPTS: "-Xmx3200m"
-      KEYSTORE_PASS: changeit
-      TERM: dumb
-    machine: true
-    steps: 
-      - 
-        add_ssh_keys: 
-          fingerprints: 
-            - "e3:02:92:9b:0f:91:cd:04:f5:a1:38:05:23:c7:d8:0e"
-            - "29:19:96:7d:e3:e4:29:63:d4:45:93:9b:7a:47:6e:c3"
-            - "d9:99:2c:a4:5b:c5:26:0a:f0:31:11:b4:14:96:30:a4"
-            - "cc:7e:e8:24:f0:0a:90:13:16:6b:cb:45:85:dc:b6:7c"
-            - "16:62:81:7d:3d:b8:f2:e8:56:81:5c:af:59:dc:38:56"
-            - "c5:5d:ba:fc:98:0c:2c:14:8f:65:28:e2:12:af:a6:f9"
-            - "a4:e8:93:58:da:83:e7:0b:2f:be:58:f7:e2:51:83:43"
-            - "90:f2:ea:72:f3:37:57:15:a9:ba:31:34:6e:32:e9:ec"
-            - "29:19:96:7d:e3:e4:29:63:d4:45:93:9b:7a:47:6e:c3"
-            - "42:dd:ce:44:3a:78:cd:f5:68:c0:d5:7a:72:ff:e9:6a"
-            - "37:cc:08:c5:a7:39:bb:a1:68:90:9e:66:38:75:2e:a7"
-            - "a4:e8:93:58:da:83:e7:0b:2f:be:58:f7:e2:51:83:43"
-            - "28:d1:1d:3a:9e:8e:dc:69:56:a6:5b:96:39:17:db:6d"
-            - "cc:53:47:07:6f:11:a0:ed:a5:30:1e:f0:d5:9a:10:48"
-            - "c6:61:a9:ce:54:19:d8:ff:3d:a8:93:f8:db:ca:a2:78"
-            - "77:33:70:ff:8d:2e:fe:d3:25:a9:9d:be:c3:4e:0a:d4"
-            - "3b:a7:cb:f5:21:83:e5:f0:7b:ea:4d:82:aa:cf:e5:ba"
-            - "eb:5d:5a:e3:36:47:e2:26:87:51:46:ef:07:4a:71:b6"
-            - "5c:06:e5:18:77:85:49:b3:db:72:9e:2d:11:e2:d5:19"
-      - 
-        checkout: 
-          path: ~/c2f
-      - 
-        run: 
-          command: "if [ \"${CIRCLE_BRANCH}\" == \"${DEPLOY_BRANCH}\" ]; then\n\
-              \x20  echo \"Branch: ${DEPLOY_BRANCH} will get deployed to ${DEPLOY_ENV}\"\n\
-              else\n\
-              \x20  echo \"Current Branch is not equal to ${DEPLOY_BRANCH}. So deployment will be skipped.\"\n\
-              fi\n\
-              \x20\n"
-          name: "Environment Variables Checking"
-      - 
-        run: 
-          command: |
-              mkdir ~/c2f/A6
-              ssh-agent bash -c 'ssh-add /home/circleci/.ssh/id_rsa_42ddce443a78cdf568c0d57a72ffe96a; git clone -b ${CIRCLE_BRANCH} -v git@github.com:Connected2FiberTeam/TCW-A6.git ~/c2f/A6'
-          name: "Checkout UI"
-      - 
-        run: 
-          command: |
-              cd ~/c2f/A6/          
-              ssh-agent bash -c 'ssh-add /home/circleci/.ssh/id_rsa_42ddce443a78cdf568c0d57a72ffe96a; git submodule sync --recursive'
-              ssh-agent bash -c 'ssh-add /home/circleci/.ssh/id_rsa_42ddce443a78cdf568c0d57a72ffe96a; git submodule update --recursive --init'
-          name: "Checking out sub-modules"
-      - 
-        restore_cache: 
-          keys: 
-            - "v1-dependencies-{{ checksum \"package.json\" }}"
-            - v1-dependencies-
-      - 
-        run: 
-          command: |
-              cd ~/c2f/A6
-              #Install  Node.js 10.18.1 with build in nvm tool
-              # https://www.cloudesire.com/how-to-upgrade-node-on-circleci-machine-executor/
-              export NVM_DIR="/opt/circleci/.nvm"
-              [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-              nvm install v10.18.1
-              nvm alias default v10.18.1
-              node --version  
-              npm --version
-              
-              if [ "${CIRCLE_BRANCH}" == "${DEPLOY_BRANCH}" ]; then  
-               if [ "${DEPLOY_ENV}" == "stage" ]; then
-                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null stageweb01@tcwstageweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/.env .
-                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r stageweb01@tcwstageweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/src/environments ~/c2f/A6/src
-               elif [ "${DEPLOY_ENV}" == "uat" ]; then
-                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null preprodweb01@preprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/.env .
-                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r preprodweb01@preprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/src/environments ~/c2f/A6/src
-               if [ "${DEPLOY_ENV}" == "prod" ]; then
-                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null prodweb01@tcwprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/.env .
-                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r prodweb01@tcwprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/a6/TCW-A6/src/environments ~/c2f/A6/src
-               fi
-              fi
-              
-              npm install
-              npm run build-prod
-              cp -r ~/c2f/A6/dist/c2f/* ~/c2f/connected2fiber/web/
-          name: "Building UI"
-      - 
-        save_cache: 
-          key: "v1-dependencies-{{ checksum \"package.json\" }}"
-          paths: 
-            - node_modules
-          root: ~/c2f/A6
-      - 
-        restore_cache: 
-          keys: 
-            - "connected2fiber-{{ checksum \"build.gradle\" }}"
-            - connected2fiber-
-      - 
-        run: 
-          command: "sudo keytool -storepass ${KEYSTORE_PASS} -keystore /etc/ssl/certs/java/cacerts -importcert -alias godaddy-root-CA -noprompt -file ~/c2f/.circleci/c2fchain.crt"
-          name: "Updating Java Keystore for Nexus Repo."
-      - 
-        run: 
-          command: "gradle build prepareWebappWar -x test"
-          name: "Building Deployment Assembly"
-      - 
-        save_cache: 
-          key: "connected2fiber-{{ checksum \"build.gradle\" }}"
-          paths: 
-            - ~/.gradle
-      - 
-        run: 
-          command: |
-              if [ "${CIRCLE_BRANCH}" == "${DEPLOY_BRANCH}" ]; then  
-               if [ "${DEPLOY_ENV}" == "stage" ]; then
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null stagesche01@tcwscheduler01stage.eastus.cloudapp.azure.com '/bin/cp /data/connectedworld/webapps/ROOT.war /data/connectedworld/webapps_circleci'
-                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /home/circleci/c2f/connected2fiber/build/libs/ROOT.war stagesche01@tcwscheduler01stage.eastus.cloudapp.azure.com:/data/connectedworld/webapps/
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dev@tcwscheduler01stage.eastus.cloudapp.azure.com 'sudo systemctl restart tomcat.service'
-                   
-               elif [ "${DEPLOY_ENV}" == "uat" ]; then
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null preprodscheduler01@tcwscheduler01preprod.eastus.cloudapp.azure.com '/bin/cp /data/connectedworld/webapps/ROOT.war /data/connectedworld/webapps_circleci'
-                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /home/circleci/c2f/connected2fiber/build/libs/ROOT.war preprodscheduler01@tcwscheduler01preprod.eastus.cloudapp.azure.com:/data/connectedworld/webapps/
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dev@tcwscheduler01preprod.eastus.cloudapp.azure.com 'sudo systemctl restart tomcat.service'                  
-                   
-               if [ "${DEPLOY_ENV}" == "prod" ]; then
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null prodscheduler01@tcwscheduler01prod.eastus.cloudapp.azure.com '/bin/cp /data/connectedworld/webapps/ROOT.war /data/connectedworld/webapps_circleci'
-                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /home/circleci/c2f/connected2fiber/build/libs/ROOT.war prodscheduler01@tcwscheduler01prod.eastus.cloudapp.azure.com:/data/connectedworld/webapps/
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dev@tcwscheduler01prod.eastus.cloudapp.azure.com 'sudo systemctl restart tomcat.service'                     
-               fi
-              fi
-          name: "Deploying to Schedulers"
-      - 
-        run: 
-          command: |
-              if [ "${CIRCLE_BRANCH}" == "${DEPLOY_BRANCH}" ]; then  
-               if [ "${DEPLOY_ENV}" == "stage" ]; then
-                  rm -rf /home/circleci/c2f/connected2fiber/src/main/java/com/fiber/messagebroker/rabbitmq/consumers
-                  gradle build prepareWebappWar -x test
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null stageweb01@tcwstageweb01.eastus.cloudapp.azure.com '/bin/cp /data/connectedworld/webapps/ROOT.war /data/connectedworld/webapps_circleci'
-                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /home/circleci/c2f/connected2fiber/build/libs/ROOT.war stageweb01@tcwstageweb01.eastus.cloudapp.azure.com:/data/connectedworld/webapps/
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dev@tcwstageweb01.eastus.cloudapp.azure.com 'sudo systemctl restart tomcat.service'
-                   
-               elif [ "${DEPLOY_ENV}" == "uat" ]; then
-                  rm -rf /home/circleci/c2f/connected2fiber/src/main/java/com/fiber/messagebroker/rabbitmq/consumers
-                  gradle build prepareWebappWar -x test
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null preprodweb01@preprodweb01.eastus.cloudapp.azure.com '/bin/cp /data/connectedworld/webapps/ROOT.war /data/connectedworld/webapps_circleci'
-                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /home/circleci/c2f/connected2fiber/build/libs/ROOT.war preprodweb01@preprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/webapps/
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dev@preprodweb01.eastus.cloudapp.azure.com 'sudo systemctl restart tomcat.service'                    
-                   
-               if [ "${DEPLOY_ENV}" == "prod" ]; then
-                  rm -rf /home/circleci/c2f/connected2fiber/src/main/java/com/fiber/messagebroker/rabbitmq/consumers
-                  gradle build prepareWebappWar -x test
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null prodweb01@tcwprodweb01.eastus.cloudapp.azure.com '/bin/cp /data/connectedworld/webapps/ROOT.war /data/connectedworld/webapps_circleci'
-                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /home/circleci/c2f/connected2fiber/build/libs/ROOT.war prodweb01@tcwprodweb01.eastus.cloudapp.azure.com:/data/connectedworld/webapps/
-                  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dev@tcwprodweb01.eastus.cloudapp.azure.com 'sudo systemctl restart tomcat.service'
-                   
-               fi
-              fi
-          name: "Deploying to AppServers"
-    working_directory: ~/c2f/connected2fiber
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
 version: 2
-workflows: 
-  build-and-deploy: 
-    jobs: 
-      - 
-        build_deploy: 
-          context: nexus
-          filters: 
-            branches: 
-              only: 
-                - master
-                - develop-stage
-  build-approve-deploy: 
-    jobs: 
-      - 
-        build: 
-          context: nexus
-          filters: 
-            branches: 
-              only: 
-                - "/Release[0-9]+/"
-      - 
-        hold: 
-          filters: 
-            branches: 
-              only: "/Release[0-9]+/"
-          requires: 
-            - build
-          type: approval
-      - 
-        build_deploy: 
-          context: nexus
-          filters: 
-            branches: 
-              only: "/Release[0-9]+/"
-          requires: 
-            - hold
-  version: 2
+
+jobs:
+  build:
+    #docker:
+    machine: true
+      # specify the version you desire here
+      #- image: circleci/node:10
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/mongo:3.4.4
+
+    #resource_class: large
+    working_directory: ~/repo
+    
+    environment:
+      DEPLOY_BRANCH: master
+      DEPLOY_ENV: stage # The Values for this parameter will stage / uat / prod. No other values are allowed
+
+    steps:
+      - checkout:
+          
+      - store_artifacts:
+          path: ~/repo/docker
+          
+  build_deploy:  
+    
+    machine: true    
+    working_directory: ~/repo # directory where steps will run
+    environment:
+      DEPLOY_BRANCH: master
+      DEPLOY_ENV: stage # The Values for this parameter will stage / uat / prod. No other values are allowed
+      CIRCLE_TOK:
+      
+    steps:
+     
+      - run:
+          name: Restore Artifacts
+          command: |
+             curl https://circleci.com/api/v1.1/project/github/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/latest/artifacts?circle-token=${CIRCLE_TOK}           
+     
