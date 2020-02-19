@@ -18,7 +18,11 @@ jobs:
       DEPLOY_BRANCH: master
       DEPLOY_ENV: stage
     machine: true
-    steps: 
+    steps:
+    
+    - add_ssh_keys:
+          fingerprints:
+             - "9d:ce:5b:0e:1a:bb:8e:62:24:72:c7:0d:f4:1e:6c:21"
       - 
         run: 
           command: |
