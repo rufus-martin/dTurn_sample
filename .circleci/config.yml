@@ -23,7 +23,7 @@ jobs:
         run: 
           command: |
               curl https://circleci.com/api/v1.1/project/github/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BUILD_NUM}/latest/artifacts?circle-token=${CIRCLE_TOK}
-              ls /home/circleci
+              ls /home/circleci/repo
           name: "Restore Artifacts"
     working_directory: ~/repo
 workflows: 
