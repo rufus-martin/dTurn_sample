@@ -10,7 +10,7 @@ jobs:
         checkout: ~
       - 
         store_artifacts: 
-          path: ~/repo/docker
+          path: /home/circleci/repo/docker
     working_directory: ~/repo
   build_deploy: 
     environment: 
