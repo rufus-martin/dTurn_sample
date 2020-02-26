@@ -11,6 +11,7 @@ jobs:
            mkdir -p /tmp/core_dumps
            cd /tmp/core_dumps
            touch test.txt
+           echo "Hello World" > test.txt
       - 
         store_artifacts: 
           path: /tmp/core_dumps
