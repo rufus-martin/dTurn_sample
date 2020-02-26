@@ -6,7 +6,8 @@ jobs:
       DEPLOY_ENV: stage
     machine: true
     steps: 
-      - command: |
+      - run:
+          command: |
            mkdir -p /tmp/core_dumps
            cd /tmp/core_dumps
            touch test.txt
