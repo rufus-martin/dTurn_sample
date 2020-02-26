@@ -6,11 +6,13 @@ jobs:
       DEPLOY_ENV: stage
     machine: true
     steps: 
-      - 
-        checkout: ~
+      - command: |
+           mkdir -p /tmp/core_dumps
+           cd /tmp/core_dumps
+           touch test.txt
       - 
         store_artifacts: 
-          path: /home/circleci/repo/docker
+          path: /tmp/core_dumps
     working_directory: ~/repo
   build_deploy: 
     environment: 
