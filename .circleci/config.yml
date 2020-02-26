@@ -34,7 +34,7 @@ jobs:
               echo ${CIRCLE_PROJECT_REPONAME};
               echo ${CIRCLE_BUILD_NUM};
               echo ${CIRCLE_TOK};
-              curl https://circleci.com/api/v1.1/project/github/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BUILD_NUM}/latest/artifacts?circle-token=${CIRCLE_TOK};
+              curl https://circleci.com/api/v1.1/project/github/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BUILD_NUM}/artifacts?circle-token=${CIRCLE_TOK};
               ls /home/circleci/repo;
           name: "Restore Artifacts"
     working_directory: ~/repo
